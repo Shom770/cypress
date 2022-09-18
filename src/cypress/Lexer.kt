@@ -33,28 +33,47 @@ class Lexer(private val text: String) {
             if (currentChar!!.isWhitespace()) {
                 advance()
             }
-            else if (currentChar!! in "+-/()*" && peekAhead() != '*') {
-                val tokenKind = when (currentChar) {
-                    '+' -> TokenType.PLUS
-                    '-' -> TokenType.MINUS
-                    '/' -> TokenType.FORWARD_SLASH
-                    '(' -> TokenType.OPEN_PAREN
-                    ')' -> TokenType.CLOSE_PAREN
-                    '*' -> TokenType.ASTERISK
-                    else -> {
-                        throw RuntimeException()
-                    }
-                }
-
-                tokens.add(Token(kind=tokenKind, span=position..position))
+            else if (currentChar!! in "+-/()*") {
+                tokens.add(lexOperator())
                 advance()
             }
-            else if (currentChar == '*' && peekAhead() == '*') {
-                tokens.add(Token(kind=TokenType.DOUBLE_ASTERISK, span=position..advance()))
+            else if (currentChar!! in "()") {
+                tokens.add(lexMisc())
                 advance()
             }
         }
 
         return tokens
+    }
+
+    private fun lexMisc(): Token {
+        val tokenKind = when (currentChar) {
+            '(' -> TokenType.OPEN_PAREN
+            ')' -> TokenType.CLOSE_PAREN
+            else -> {
+                throw RuntimeException()
+            }
+        }
+
+        return Token(kind = tokenKind, span = position..position)
+    }
+    private fun lexOperator(): Token {
+        if (currentChar == '*' && peekAhead() == '*') {
+            return Token(kind = TokenType.DOUBLE_ASTERISK, span = position..advance())
+        }
+        else {
+            val tokenKind = when (currentChar) {
+                '+' -> TokenType.PLUS
+                '-' -> TokenType.MINUS
+                '/' -> TokenType.FORWARD_SLASH
+                '(' -> TokenType.OPEN_PAREN
+                ')' -> TokenType.CLOSE_PAREN
+                '*' -> TokenType.ASTERISK
+                else -> {
+                    throw RuntimeException()
+                }
+            }
+            return Token(kind = tokenKind, span = position..position)
+        }
     }
 }
