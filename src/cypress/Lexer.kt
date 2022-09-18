@@ -2,17 +2,17 @@ package cypress
 
 
 class Lexer(val text: String) {
-    val tokens = mutableListOf<Token>()
-    private var current_char: Char? = null
+    private val tokens = mutableListOf<Token>()
+    private var currentChar: Char? = null
     private var position = -1
 
     private fun advance() {
         try {
             position += 1
-            current_char = text[position]
+            currentChar = text[position]
         }
         catch (e: IndexOutOfBoundsException) {
-            current_char = null
+            currentChar = null
         }
 
     }
@@ -20,11 +20,11 @@ class Lexer(val text: String) {
     fun tokenize(): MutableList<Token> {
         advance()
 
-        while (current_char != null) {
-            if (current_char!!.isWhitespace()) {
+        while (currentChar != null) {
+            if (currentChar!!.isWhitespace()) {
                 continue
             }
-            else if (current_char == '+') {
+            else if (currentChar == '+') {
                 tokens.add(Token(kind=TokenType.PLUS, span=position..position))
                 advance()
             }
