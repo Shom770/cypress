@@ -1,6 +1,10 @@
 package cypress
 
 enum class TokenType {
+    // misc
+    OPEN_PAREN,
+    CLOSE_PAREN,
+
     // operators
     PLUS,
     MINUS,
