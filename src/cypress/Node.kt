@@ -1,19 +1,19 @@
 package cypress
 
 sealed class Node {
-    class BinOpNode(val leftNode: Node, val opToken: Token, val rightNode: Node) {
+    class BinOpNode(val leftNode: Node, val opToken: Token, val rightNode: Node): Node() {
         override fun toString(): String {
             return "BinOpNode(leftNode = $leftNode, opToken = $opToken, rightNode = $rightNode)"
         }
     }
 
-    class NumberNode(val value: String) {
+    class NumberNode(val token: Token): Node() {
         override fun toString(): String {
-            return "NumberNode(value = $value)"
+            return "NumberNode(token = $token)"
         }
     }
 
-    class UnaryNode(val sign: String, val node: Node) {
+    class UnaryOpNode(val sign: Token, val node: Node): Node() {
         override fun toString(): String {
             return "UnaryNode(sign = $sign, node = $node)"
         }
