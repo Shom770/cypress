@@ -5,41 +5,29 @@ class Lexer(private val text: String) {
     private val tokens = mutableListOf<Token>()
     private var currentChar: Char? = null
     private var position = -1
-
-    private fun advance(): Int {
-        try {
-            position += 1
-            currentChar = text[position]
+        set(value) {
+            field = value
+            currentChar = text.getOrNull(value)
         }
-        catch (e: IndexOutOfBoundsException) {
-            currentChar = null
-        }
-
-        return position
-    }
 
     private fun peekAhead(): Char? {
-        return try {
-            text[position + 1]
-        } catch (e: IndexOutOfBoundsException) {
-            null
-        }
+        return text.getOrNull(position + 1)
     }
 
     fun tokenize(): MutableList<Token> {
-        advance()
+        position += 1
 
         while (currentChar != null) {
             if (currentChar!!.isWhitespace()) {
-                advance()
+                position += 1
             }
             else if (currentChar!! in "+-/()*") {
                 tokens.add(lexOperator())
-                advance()
+                position += 1
             }
             else if (currentChar!! in "()") {
                 tokens.add(lexMisc())
-                advance()
+                position += 1
             }
         }
 
@@ -51,7 +39,7 @@ class Lexer(private val text: String) {
             '(' -> TokenType.OPEN_PAREN
             ')' -> TokenType.CLOSE_PAREN
             else -> {
-                throw RuntimeException()
+                throw RuntimeException("$currentChar is not a valid character.")
             }
         }
 
@@ -59,7 +47,8 @@ class Lexer(private val text: String) {
     }
     private fun lexOperator(): Token {
         if (currentChar == '*' && peekAhead() == '*') {
-            return Token(kind = TokenType.DOUBLE_ASTERISK, span = position..advance())
+            position += 1
+            return Token(kind = TokenType.DOUBLE_ASTERISK, span = position - 1..position)
         }
         else {
             val tokenKind = when (currentChar) {
@@ -70,7 +59,7 @@ class Lexer(private val text: String) {
                 ')' -> TokenType.CLOSE_PAREN
                 '*' -> TokenType.ASTERISK
                 else -> {
-                    throw RuntimeException()
+                    throw RuntimeException("$currentChar is not a valid character.")
                 }
             }
             return Token(kind = tokenKind, span = position..position)

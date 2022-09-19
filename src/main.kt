@@ -7,6 +7,6 @@ fun main() {
     val text = bufferedReader.use { it.readText() }
     val lexer = Lexer(text)
     for (token in lexer.tokenize()) {
-        println(token.text(text))
+        println(token)
     }
 }
