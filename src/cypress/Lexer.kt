@@ -29,6 +29,10 @@ class Lexer(private val text: String) {
                 tokens.add(lexMisc())
                 position += 1
             }
+            else if (currentChar!!.isDigit() || currentChar == '.') {
+                tokens.add(lexNumber())
+                position += 1
+            }
         }
 
         return tokens
@@ -45,6 +49,7 @@ class Lexer(private val text: String) {
 
         return Token(kind = tokenKind, span = position..position)
     }
+
     private fun lexOperator(): Token {
         if (currentChar == '*' && peekAhead() == '*') {
             position += 1
@@ -64,5 +69,24 @@ class Lexer(private val text: String) {
             }
             return Token(kind = tokenKind, span = position..position)
         }
+    }
+
+    private fun lexNumber(): Token {
+        val startingPosition = position
+        var decimalCount = 0
+
+        while (currentChar != null && (currentChar!!.isDigit() || currentChar == '.')) {
+            if (currentChar == '.') decimalCount += 1
+            position += 1
+        }
+
+        if (decimalCount > 1) {
+            throw ArithmeticException("Had $decimalCount decimal points in float.")
+        }
+
+        return Token(
+            kind = if (decimalCount == 0) TokenType.INT else TokenType.FLOAT,
+            span= startingPosition until position
+        )
     }
 }
