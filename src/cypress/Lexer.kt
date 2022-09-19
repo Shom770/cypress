@@ -80,13 +80,15 @@ class Lexer(private val text: String) {
             position += 1
         }
 
+        position -= 1
+
         if (decimalCount > 1) {
             throw ArithmeticException("Had $decimalCount decimal points in float.")
         }
 
         return Token(
             kind = if (decimalCount == 0) TokenType.INT else TokenType.FLOAT,
-            span= startingPosition until position
+            span= startingPosition..position
         )
     }
 }

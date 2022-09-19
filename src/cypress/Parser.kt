@@ -66,6 +66,13 @@ class Parser(private val tokens: MutableList<Token>) {
             position += 1
             return Node.UnaryOpNode(token, factor())
         }
+        else if (token.kind == TokenType.OPEN_PAREN) {
+            position += 1
+            val result = expr()
+            position += 1
+
+            return result
+        }
         throw RuntimeException("Current token ($token) invalid.")
     }
 }
