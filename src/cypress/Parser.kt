@@ -62,6 +62,7 @@ class Parser(private val tokens: MutableList<Token>, private val text: String) {
 
     private fun factor(): Node {
         val token = currentToken
+
         if (token!!.kind == TokenType.INT) {
             position += 1
             return Node.IntNode(CypressNumber.CypressInt(token.text(text).toInt()))
@@ -86,6 +87,7 @@ class Parser(private val tokens: MutableList<Token>, private val text: String) {
                 position += 2
                 Node.VarAssignNode(token, expr())
             } else {
+                position += 1
                 Node.VarAccessNode(token)
             }
         }

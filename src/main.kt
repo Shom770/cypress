@@ -6,7 +6,6 @@ fun main() {
     val bufferedReader = File("src/test.cy").bufferedReader()
     val text = bufferedReader.use { it.readText() }
     val tokens = Lexer(text).tokenize()
-    println(tokens)
-//    val nodes = Parser(tokens, text).parse()
-//    println(Interpreter(nodes, text).walk())
+    val nodes = Parser(tokens, text).parse()
+    println(Interpreter(nodes, text).walk())
 }
