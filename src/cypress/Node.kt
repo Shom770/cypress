@@ -24,4 +24,16 @@ sealed class Node {
             return "UnaryNode(sign = $sign, node = $node)"
         }
     }
+
+    class VarAssignNode(val identifier: Token, val node: Node): Node() {
+        override fun toString(): String {
+            return "VarAssignNode(identifier = $identifier, node = $node)"
+        }
+    }
+
+    class VarAccessNode(val identifier: Token): Node() {
+        override fun toString(): String {
+            return "VarAccessNode(identifier = $identifier)"
+        }
+    }
 }

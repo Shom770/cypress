@@ -8,6 +8,10 @@ class Parser(private val tokens: MutableList<Token>, private val text: String) {
         }
     var currentToken: Token? = null
 
+    private fun peekAhead(): Token? {
+        return tokens.getOrNull(position + 1)
+    }
+
     fun parse(): MutableList<Node> {
         var nodes = mutableListOf<Node>()
         position += 1
@@ -77,6 +81,15 @@ class Parser(private val tokens: MutableList<Token>, private val text: String) {
 
             return result
         }
+        else if (token.kind == TokenType.IDENTIFIER) {
+            return if (peekAhead()?.kind == TokenType.ASSIGN) {
+                position += 2
+                Node.VarAssignNode(token, expr())
+            } else {
+                Node.VarAccessNode(token)
+            }
+        }
+
         throw RuntimeException("Current token ($token) invalid.")
     }
 }
