@@ -25,12 +25,16 @@ class Lexer(private val text: String) {
                 tokens.add(lexOperator())
                 position += 1
             }
-            else if (currentChar!! in "()") {
+            else if (currentChar!! in "()=") {
                 tokens.add(lexMisc())
                 position += 1
             }
             else if (currentChar!!.isDigit() || currentChar == '.') {
                 tokens.add(lexNumber())
+                position += 1
+            }
+            else if (currentChar!!.isLetter()) {
+                tokens.add(lexIdentifier())
                 position += 1
             }
         }
@@ -42,6 +46,7 @@ class Lexer(private val text: String) {
         val tokenKind = when (currentChar) {
             '(' -> TokenType.OPEN_PAREN
             ')' -> TokenType.CLOSE_PAREN
+            '=' -> TokenType.ASSIGN
             else -> {
                 throw RuntimeException("$currentChar is not a valid character.")
             }
@@ -88,7 +93,19 @@ class Lexer(private val text: String) {
 
         return Token(
             kind = if (decimalCount == 0) TokenType.INT else TokenType.FLOAT,
-            span= startingPosition..position
+            span = startingPosition..position
         )
+    }
+
+    private fun lexIdentifier(): Token {
+        var startingPosition = position
+
+        while (currentChar != null && currentChar!!.isLetterOrDigit()) {
+            position += 1
+        }
+
+        position -= 1
+
+        return Token(kind = TokenType.IDENTIFIER, span = startingPosition..position)
     }
 }

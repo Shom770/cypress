@@ -1,9 +1,10 @@
 package cypress
 
 enum class TokenType {
-    // misc
+    // symbols
     OPEN_PAREN,
     CLOSE_PAREN,
+    ASSIGN,
 
     // operators
     PLUS,
@@ -14,5 +15,6 @@ enum class TokenType {
 
     // identifiers and literals
     INT,
-    FLOAT
+    FLOAT,
+    IDENTIFIER
 }
