@@ -1,6 +1,6 @@
 package cypress
 
-class Parser(private val tokens: MutableList<Token>) {
+class Parser(private val tokens: MutableList<Token>, private val text: String) {
     var position = -1
         set(value) {
             field = value
@@ -58,9 +58,13 @@ class Parser(private val tokens: MutableList<Token>) {
 
     private fun factor(): Node {
         val token = currentToken
-        if (token!!.kind in setOf(TokenType.INT, TokenType.FLOAT)) {
+        if (token!!.kind == TokenType.INT) {
             position += 1
-            return Node.NumberNode(token)
+            return Node.IntNode(CypressNumber.CypressInt(token.text(text).toInt()))
+        }
+        else if (token.kind == TokenType.FLOAT) {
+            position += 1
+            return Node.DoubleNode(CypressNumber.CypressDouble(token.text(text).toDouble()))
         }
         else if (token.kind in setOf(TokenType.PLUS, TokenType.MINUS)) {
             position += 1

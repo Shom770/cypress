@@ -7,9 +7,15 @@ sealed class Node {
         }
     }
 
-    class NumberNode(val token: Token): Node() {
+    class IntNode(val value: CypressNumber.CypressInt): Node() {
         override fun toString(): String {
-            return "NumberNode(token = $token)"
+            return "IntNode(value = $value)"
+        }
+    }
+
+    class DoubleNode(val value: CypressNumber.CypressDouble): Node() {
+        override fun toString(): String {
+            return "DoubleNode(value = $value)"
         }
     }
 
