@@ -28,7 +28,7 @@ class Lexer(private val text: String) {
                 tokens.add(lexOperator())
                 position += 1
             }
-            else if (currentChar!! in "()=<>!") {
+            else if (currentChar!! in "()=<>!{}") {
                 tokens.add(lexSymbol())
                 position += 1
             }
@@ -62,6 +62,8 @@ class Lexer(private val text: String) {
                 '=' -> TokenType.ASSIGN
                 '<' -> TokenType.LESS_THAN
                 '>' -> TokenType.GREATER_THAN
+                '{' -> TokenType.OPEN_BRACE
+                '}' -> TokenType.CLOSE_BRACE
                 else -> throw RuntimeException("$currentChar is not a valid character.")
             }
         }
@@ -112,7 +114,7 @@ class Lexer(private val text: String) {
     }
 
     private fun lexIdentifierOrKeyword(): Token {
-        var startingPosition = position
+        val startingPosition = position
 
         while (currentChar != null && currentChar!!.isLetterOrDigit()) {
             position += 1
