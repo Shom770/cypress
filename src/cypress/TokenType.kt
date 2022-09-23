@@ -5,6 +5,14 @@ enum class TokenType {
     OPEN_PAREN,
     CLOSE_PAREN,
     ASSIGN,
+    OPEN_BRACE,
+    CLOSE_BRACE,
+    EQUALS,
+    NOT_EQUALS,
+    LESS_THAN,
+    GREATER_THAN,
+    LESS_THAN_OR_EQ,
+    GREATER_THAN_OR_EQ,
 
     // operators
     PLUS,
@@ -16,5 +24,9 @@ enum class TokenType {
     // identifiers and literals
     INT,
     FLOAT,
-    IDENTIFIER
+    IDENTIFIER,
+
+    // keywords
+    IF,
+    ELSE
 }
