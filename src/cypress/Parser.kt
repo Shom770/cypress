@@ -27,7 +27,10 @@ class Parser(private val tokens: MutableList<Token>, private val text: String) {
     private fun expr(): Node {
         var result = term()
 
-        while (currentToken != null && currentToken!!.kind in setOf(TokenType.PLUS, TokenType.MINUS)) {
+        while (
+            currentToken != null
+            && currentToken!!.kind in setOf(TokenType.PLUS, TokenType.MINUS, TokenType.DOUBLE_AMPERSAND)
+        ) {
             val symbol = currentToken!!
             position += 1
             result = Node.BinOpNode(result, symbol, term())
@@ -39,7 +42,10 @@ class Parser(private val tokens: MutableList<Token>, private val text: String) {
     private fun term(): Node {
         var result = pow()
 
-        while (currentToken != null && currentToken!!.kind in setOf(TokenType.ASTERISK, TokenType.FORWARD_SLASH)) {
+        while (
+            currentToken != null
+            && currentToken!!.kind in setOf(TokenType.ASTERISK, TokenType.FORWARD_SLASH, TokenType.DOUBLE_PIPE)
+        ) {
             val symbol = currentToken!!
             position += 1
             result = Node.BinOpNode(result, symbol, pow())
@@ -51,7 +57,18 @@ class Parser(private val tokens: MutableList<Token>, private val text: String) {
     private fun pow(): Node {
         var result = factor()
 
-        while (currentToken != null && currentToken!!.kind == TokenType.DOUBLE_ASTERISK) {
+        while (
+            currentToken != null
+            && currentToken!!.kind in setOf(
+                TokenType.DOUBLE_ASTERISK,
+                TokenType.GREATER_THAN,
+                TokenType.LESS_THAN,
+                TokenType.GREATER_THAN_OR_EQ,
+                TokenType.LESS_THAN_OR_EQ,
+                TokenType.EQUALS,
+                TokenType.NOT_EQUALS
+            )
+        ) {
             val symbol = currentToken!!
             position += 1
             result = Node.BinOpNode(result, symbol, factor())

@@ -13,6 +13,8 @@ enum class TokenType {
     GREATER_THAN,
     LESS_THAN_OR_EQ,
     GREATER_THAN_OR_EQ,
+    DOUBLE_AMPERSAND,
+    DOUBLE_PIPE,
 
     // operators
     PLUS,
