@@ -9,6 +9,9 @@ class Lexer(private val text: String) {
             field = value
             currentChar = text.getOrNull(value)
         }
+    private val keywordMapping = hashMapOf(
+        "if" to TokenType.IF
+    )
 
     private fun peekAhead(): Char? {
         return text.getOrNull(position + 1)
@@ -34,7 +37,7 @@ class Lexer(private val text: String) {
                 position += 1
             }
             else if (currentChar!!.isLetter()) {
-                tokens.add(lexIdentifier())
+                tokens.add(lexIdentifierOrKeyword())
                 position += 1
             }
         }
@@ -50,7 +53,7 @@ class Lexer(private val text: String) {
                 '=' -> TokenType.EQUALS
                 '!' -> TokenType.NOT_EQUALS
                 else -> throw RuntimeException("$currentChar is not a valid character.")
-            }
+            }.also { position += 1 }
         }
         else {
             when (currentChar) {
@@ -108,7 +111,7 @@ class Lexer(private val text: String) {
         )
     }
 
-    private fun lexIdentifier(): Token {
+    private fun lexIdentifierOrKeyword(): Token {
         var startingPosition = position
 
         while (currentChar != null && currentChar!!.isLetterOrDigit()) {
@@ -117,6 +120,15 @@ class Lexer(private val text: String) {
 
         position -= 1
 
-        return Token(kind = TokenType.IDENTIFIER, span = startingPosition..position)
+        val keywordText = text.slice(startingPosition..position)
+
+        return if (keywordText in keywordMapping.keys) {
+            Token(
+                kind = keywordMapping[keywordText] ?: throw RuntimeException("Invalid keyword: '$keywordText'"),
+                span = startingPosition..position
+            )
+        } else {
+            Token(kind = TokenType.IDENTIFIER, span = startingPosition..position)
+        }
     }
 }
