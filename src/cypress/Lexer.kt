@@ -25,8 +25,8 @@ class Lexer(private val text: String) {
                 tokens.add(lexOperator())
                 position += 1
             }
-            else if (currentChar!! in "()=") {
-                tokens.add(lexMisc())
+            else if (currentChar!! in "()=<>!") {
+                tokens.add(lexSymbol())
                 position += 1
             }
             else if (currentChar!!.isDigit() || currentChar == '.') {
@@ -42,13 +42,24 @@ class Lexer(private val text: String) {
         return tokens
     }
 
-    private fun lexMisc(): Token {
-        val tokenKind = when (currentChar) {
-            '(' -> TokenType.OPEN_PAREN
-            ')' -> TokenType.CLOSE_PAREN
-            '=' -> TokenType.ASSIGN
-            else -> {
-                throw RuntimeException("$currentChar is not a valid character.")
+    private fun lexSymbol(): Token {
+        val tokenKind = if (peekAhead() == '=') {
+            when (currentChar) {
+                '<' -> TokenType.LESS_THAN_OR_EQ
+                '>' -> TokenType.GREATER_THAN_OR_EQ
+                '=' -> TokenType.EQUALS
+                '!' -> TokenType.NOT_EQUALS
+                else -> throw RuntimeException("$currentChar is not a valid character.")
+            }
+        }
+        else {
+            when (currentChar) {
+                '(' -> TokenType.OPEN_PAREN
+                ')' -> TokenType.CLOSE_PAREN
+                '=' -> TokenType.ASSIGN
+                '<' -> TokenType.LESS_THAN
+                '>' -> TokenType.GREATER_THAN
+                else -> throw RuntimeException("$currentChar is not a valid character.")
             }
         }
 
