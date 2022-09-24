@@ -1,7 +1,10 @@
 package cypress
 
+import javax.management.relation.RelationNotFoundException
+import kotlin.reflect.full.isSubclassOf
+
 class Interpreter(private val nodes: List<Node>, private val text: String) {
-    private val symbolTable = hashMapOf<String, CypressNumber>()
+    private val symbolTable = hashMapOf<String, Any>()
 
     fun walk(): MutableList<Any> {
         var result = mutableListOf<Any>()
@@ -22,7 +25,7 @@ class Interpreter(private val nodes: List<Node>, private val text: String) {
         return result
     }
 
-    private fun parseNode(node: Node.VarAssignNode): CypressNumber {
+    private fun parseNode(node: Node.VarAssignNode): Any {
         val nodeResult = when (node.node) {
             is Node.IntNode -> parseNode(node.node)
             is Node.DoubleNode -> parseNode(node.node)
@@ -36,7 +39,7 @@ class Interpreter(private val nodes: List<Node>, private val text: String) {
         return nodeResult
     }
 
-    private fun parseNode(node: Node.VarAccessNode): CypressNumber {
+    private fun parseNode(node: Node.VarAccessNode): Any {
         return symbolTable[node.identifier.text(text)]
             ?: throw RuntimeException("Variable '${node.identifier.text(text)}' does not exist.")
     }
@@ -49,7 +52,7 @@ class Interpreter(private val nodes: List<Node>, private val text: String) {
         return node.value
     }
 
-    private fun parseNode(node: Node.BinOpNode): CypressNumber {
+    private fun parseNode(node: Node.BinOpNode): Any {
         val leftNodeResult = when (node.leftNode) {
             is Node.IntNode-> parseNode(node.leftNode)
             is Node.DoubleNode -> parseNode(node.leftNode)
@@ -67,17 +70,33 @@ class Interpreter(private val nodes: List<Node>, private val text: String) {
             is Node.VarAccessNode -> parseNode(node.rightNode)
         }
 
-        return when (node.opToken.text(text)) {
-            "+" -> leftNodeResult + rightNodeResult
-            "-" -> leftNodeResult - rightNodeResult
-            "*" -> leftNodeResult * rightNodeResult
-            "/" -> leftNodeResult / rightNodeResult
-            "**" -> leftNodeResult.pow(rightNodeResult)
-            else -> throw RuntimeException("Invalid operator: ${node.opToken.text(text)}")
+        if (leftNodeResult is CypressNumber && rightNodeResult is CypressNumber) {
+            return when (node.opToken.text(text)) {
+                "+" -> leftNodeResult + rightNodeResult
+                "-" -> leftNodeResult - rightNodeResult
+                "*" -> leftNodeResult * rightNodeResult
+                "/" -> leftNodeResult / rightNodeResult
+                "**" -> leftNodeResult.pow(rightNodeResult)
+                ">" -> leftNodeResult > rightNodeResult
+                "<" -> leftNodeResult < rightNodeResult
+                ">=" -> leftNodeResult >= rightNodeResult
+                "<=" -> leftNodeResult <= rightNodeResult
+                else -> throw RuntimeException("Invalid operator: ${node.opToken.text(text)}")
+            }
+        }
+        else if (leftNodeResult is Boolean && rightNodeResult is Boolean) {
+            return when (node.opToken.text(text)) {
+                "||" -> leftNodeResult || rightNodeResult
+                "&&" -> leftNodeResult && rightNodeResult
+                else -> throw RuntimeException("Invalid operator: ${node.opToken.text(text)}")
+            }
+        }
+        else {
+            throw RuntimeException("$node's implementation doesn't exist.")
         }
     }
 
-    private fun parseNode(node: Node.UnaryOpNode): CypressNumber {
+    private fun parseNode(node: Node.UnaryOpNode): Any {
         val nodeResult = when (node.node) {
             is Node.IntNode -> parseNode(node.node)
             is Node.DoubleNode -> parseNode(node.node)
@@ -91,6 +110,7 @@ class Interpreter(private val nodes: List<Node>, private val text: String) {
             return when (nodeResult) {
                 is CypressNumber.CypressInt -> -nodeResult
                 is CypressNumber.CypressDouble -> -nodeResult
+                else -> throw RuntimeException("Cannot negate $nodeResult.")
             }
         }
         return nodeResult

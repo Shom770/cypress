@@ -7,6 +7,5 @@ fun main() {
     val text = bufferedReader.use { it.readText() }
     val tokens = Lexer(text).tokenize()
     val nodes = Parser(tokens, text).parse()
-    println(nodes)
-//    println(Interpreter(nodes, text).walk())
+    println(Interpreter(nodes, text).walk())
 }

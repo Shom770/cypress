@@ -46,31 +46,35 @@ class Lexer(private val text: String) {
     }
 
     private fun lexSymbol(): Token {
-        val tokenKind = if (peekAhead() in setOf('=', '&', '|')) {
-            when (currentChar) {
-                '<' -> TokenType.LESS_THAN_OR_EQ
-                '>' -> TokenType.GREATER_THAN_OR_EQ
-                '=' -> TokenType.EQUALS
-                '!' -> TokenType.NOT_EQUALS
-                '&' -> TokenType.DOUBLE_AMPERSAND
-                '|' -> TokenType.DOUBLE_PIPE
-                else -> throw RuntimeException("$currentChar is not a valid character.")
-            }.also { position += 1 }
+        if (peekAhead() in setOf('=', '&', '|')) {
+            return Token(
+                kind = when (currentChar) {
+                    '<' -> TokenType.LESS_THAN_OR_EQ
+                    '>' -> TokenType.GREATER_THAN_OR_EQ
+                    '=' -> TokenType.EQUALS
+                    '!' -> TokenType.NOT_EQUALS
+                    '&' -> TokenType.DOUBLE_AMPERSAND
+                    '|' -> TokenType.DOUBLE_PIPE
+                    else -> throw RuntimeException("$currentChar is not a valid character.")
+                }.also { position += 1 },
+                span = position - 1..position
+            )
         }
         else {
-            when (currentChar) {
-                '(' -> TokenType.OPEN_PAREN
-                ')' -> TokenType.CLOSE_PAREN
-                '=' -> TokenType.ASSIGN
-                '<' -> TokenType.LESS_THAN
-                '>' -> TokenType.GREATER_THAN
-                '{' -> TokenType.OPEN_BRACE
-                '}' -> TokenType.CLOSE_BRACE
-                else -> throw RuntimeException("$currentChar is not a valid character.")
-            }
+            return Token(
+                kind = when (currentChar) {
+                    '(' -> TokenType.OPEN_PAREN
+                    ')' -> TokenType.CLOSE_PAREN
+                    '=' -> TokenType.ASSIGN
+                    '<' -> TokenType.LESS_THAN
+                    '>' -> TokenType.GREATER_THAN
+                    '{' -> TokenType.OPEN_BRACE
+                    '}' -> TokenType.CLOSE_BRACE
+                    else -> throw RuntimeException("$currentChar is not a valid character.")
+                },
+                span = position..position
+            )
         }
-
-        return Token(kind = tokenKind, span = position..position)
     }
 
     private fun lexOperator(): Token {

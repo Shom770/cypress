@@ -11,6 +11,7 @@ sealed class CypressNumber {
     abstract operator fun div(other: CypressNumber): CypressNumber
     abstract fun unaryMinus(): CypressNumber
     abstract fun pow(other: CypressNumber): CypressNumber
+    abstract operator fun compareTo(other: CypressNumber): Int
 
     override fun toString(): String {
         return value.toString()
@@ -56,6 +57,10 @@ sealed class CypressNumber {
             }
         }
 
+        override operator fun compareTo(other: CypressNumber): Int {
+            return (this - other).value as Int
+        }
+
         override fun toString(): String {
             return value.toString()
         }
@@ -84,6 +89,10 @@ sealed class CypressNumber {
 
         override fun pow(other: CypressNumber): CypressNumber {
             return CypressDouble(value.pow(other.value.toDouble()))
+        }
+
+        override operator fun compareTo(other: CypressNumber): Int {
+            return (this - other).value.toInt()
         }
 
         override fun toString(): String {
