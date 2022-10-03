@@ -1,10 +1,18 @@
 package cypress
 
-class Parser(private val tokens: MutableList<Token>, private val text: String) {
+class Parser(
+    private val tokens: MutableList<Token>,
+    private val text: String,
+    private val inIfStatement: Boolean = false
+) {
     var position = -1
         set(value) {
             field = value
             currentToken = tokens.getOrNull(field)
+
+            if (currentToken?.kind == TokenType.CLOSE_BRACE && inIfStatement) {
+                currentToken = null
+            }
         }
     var currentToken: Token? = null
 
@@ -94,10 +102,7 @@ class Parser(private val tokens: MutableList<Token>, private val text: String) {
         }
         else if (token.kind == TokenType.OPEN_PAREN) {
             position += 1
-            val result = expr()
-            position += 1
-
-            return result
+            return expr().also { position += 1 }
         }
         else if (token.kind == TokenType.IDENTIFIER) {
             return if (peekAhead()?.kind == TokenType.ASSIGN) {
@@ -108,7 +113,22 @@ class Parser(private val tokens: MutableList<Token>, private val text: String) {
                 Node.VarAccessNode(token)
             }
         }
+        else if (token.kind == TokenType.IF) {
+            return ifNode().also { position += 1 }
+        }
 
         throw RuntimeException("Current token ($token) invalid.")
+    }
+
+    private fun ifNode(): Node {
+        position += 1
+        val logical_node = expr()
+
+        if (currentToken!!.kind != TokenType.OPEN_BRACE) throw RuntimeException("If statement syntax invalid.")
+        position += 1
+
+        val body_nodes = parse().also { position += 1 }
+
+
     }
 }
