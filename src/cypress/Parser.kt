@@ -122,13 +122,13 @@ class Parser(
 
     private fun ifNode(): Node {
         position += 1
-        val logical_node = expr()
+        val logicalNode = expr()
 
         if (currentToken!!.kind != TokenType.OPEN_BRACE) throw RuntimeException("If statement syntax invalid.")
         position += 1
 
-        val body_nodes = parse().also { position += 1 }
+        val bodyNodes = parse().also { position += 1 }
 
-
+        return Node.IfNode(logicalNode as Node.BinOpNode, bodyNodes)
     }
 }
