@@ -3,7 +3,6 @@ package cypress
 class Parser(
     private val tokens: MutableList<Token>,
     private val text: String,
-    private val inIfStatement: Boolean = false
 ) {
     var position = -1
         set(value) {
@@ -15,14 +14,19 @@ class Parser(
             }
         }
     var currentToken: Token? = null
+    private var inIfStatement: Boolean = false
 
     private fun peekAhead(): Token? {
         return tokens.getOrNull(position + 1)
     }
 
-    fun parse(): MutableList<Node> {
-        var nodes = mutableListOf<Node>()
-        position += 1
+    fun parse(insideIfStatement: Boolean = false): MutableList<Node> {
+        val nodes = mutableListOf<Node>()
+        inIfStatement = insideIfStatement
+
+        if (!insideIfStatement) {
+            position += 1
+        }
 
         while (currentToken != null) {
             val result = expr()
@@ -127,7 +131,7 @@ class Parser(
         if (currentToken!!.kind != TokenType.OPEN_BRACE) throw RuntimeException("If statement syntax invalid.")
         position += 1
 
-        val bodyNodes = parse().also { position += 1 }
+        val bodyNodes = parse(true).also { position += 1 }
 
         return Node.IfNode(logicalNode as Node.BinOpNode, bodyNodes)
     }
