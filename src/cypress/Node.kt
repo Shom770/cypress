@@ -36,4 +36,10 @@ sealed class Node {
             return "VarAccessNode(identifier = $identifier)"
         }
     }
+
+    class IfNode(val logicalNode: BinOpNode, val bodyNodes: MutableList<Node>): Node() {
+        override fun toString(): String {
+            return "IfNode(logicalNode = $logicalNode, bodyNodes = $bodyNodes)"
+        }
+    }
 }
