@@ -1,2 +1,8 @@
-x = 5 + 2
-y = 3 + 45
+proc add(y, z) -> {
+    if (y == z) {
+        y + z
+    }
+    else {
+        y - z
+    }
+}

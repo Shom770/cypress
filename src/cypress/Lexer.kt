@@ -5,10 +5,16 @@ class Lexer(private val text: String) {
     private val tokens = mutableListOf<Token>()
     private val textIterator = text.toList().listIterator()
 
+    private val validOperators = "+-*/<>"
+    private val miscCharacters = "(){},="
     private val validDigits = "0123456789."
     private val validIdentifiers = ('A'..'z').joinToString("").replace("[\\]^_`", "_")
-    private val validOperators = "+-*/"
-    private val miscCharacters = "()="
+    private val keywords = hashMapOf(
+        "if" to TokenType.IF,
+        "else" to TokenType.ELSE,
+        "for" to TokenType.FOR,
+        "proc" to TokenType.PROC
+    )
 
     private fun advance(n: Int = 1): IndexedValue<Char> {
         // Deal with the case where when advancing through the text, the amount of times to advance is 0.
@@ -26,14 +32,36 @@ class Lexer(private val text: String) {
 
     private fun parseOperator(index: Int, currentChar: Char): Token {
         return when (currentChar) {
-            '+' -> Token(TokenType.PLUS, span = index until advance().index)
-            '-' -> Token(TokenType.MINUS, span = index until advance().index)
-            '/' -> Token(TokenType.FORWARD_SLASH, span = index until advance().index)
+            '+' -> Token(TokenType.PLUS, span = index until index + 1)
+            '/' -> Token(TokenType.FORWARD_SLASH, span = index until index + 1)
+            // Defining behavior for the operators -, ->, *, **, <, <=, >, >=
+            '-' -> {
+                if (peekAhead() == '>') {
+                    Token(TokenType.ARROW, span = index..advance().index)
+                }
+                else {
+                    Token(TokenType.MINUS, span = index until index + 1)
+                }
+            }
             '*' -> {
                 if (peekAhead() == '*') {
-                    Token(TokenType.DOUBLE_ASTERISK, span = index until advance(2).index)
+                    Token(TokenType.DOUBLE_ASTERISK, span = index..advance().index)
                 } else {
-                    Token(TokenType.ASTERISK, span = index until advance().index)
+                    Token(TokenType.ASTERISK, span = index until index + 1)
+                }
+            }
+            '<' -> {
+                if (peekAhead() == '=') {
+                    Token(TokenType.LESS_THAN_OR_EQUAL, span = index..advance().index)
+                } else {
+                    Token(TokenType.LESS_THAN, span = index until index + 1)
+                }
+            }
+            '>' -> {
+                if (peekAhead() == '=') {
+                    Token(TokenType.GREATER_THAN_OR_EQUAL, span = index..advance().index)
+                } else {
+                    Token(TokenType.GREATER_THAN, span = index until index + 1)
                 }
             }
             else -> throw CypressError.CypressSyntaxError("Invalid character: $currentChar")
@@ -50,7 +78,10 @@ class Lexer(private val text: String) {
         } ?: (text.length - index)
         val spanOfIdentifier = index until endOfIdentifier + index
 
-        return Token(TokenType.IDENTIFIER, span = spanOfIdentifier).also {
+        return Token(
+            keywords.getOrDefault(text.substring(spanOfIdentifier).lowercase(), TokenType.IDENTIFIER),
+            span = spanOfIdentifier
+        ).also {
             advance(spanOfIdentifier.last - spanOfIdentifier.first)
         }
     }
@@ -81,7 +112,17 @@ class Lexer(private val text: String) {
         return when (currentChar) {
             '(' -> Token(TokenType.OPEN_PAREN, span = index until index + 1)
             ')' -> Token(TokenType.CLOSE_PAREN, span = index until index + 1)
-            '=' -> Token(TokenType.ASSIGN, span = index until index + 1)
+            '{' -> Token(TokenType.OPEN_BRACE, span = index until index + 1)
+            '}' -> Token(TokenType.CLOSE_BRACE, span = index until index + 1)
+            ',' -> Token(TokenType.COMMA, span = index until index + 1)
+            '=' -> {
+                if (peekAhead() == '=') {
+                    Token(TokenType.EQUALS, span = index..advance().index)
+                }
+                else {
+                    Token(TokenType.ASSIGN, span = index until index + 1)
+                }
+            }
             else -> throw CypressError.CypressSyntaxError("Invalid character: $currentChar at index $index")
         }
     }
