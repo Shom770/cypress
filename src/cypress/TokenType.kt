@@ -1,6 +1,6 @@
 package cypress
 
-enum class TokenType {
+enum class TokenType(val precedence: Int = 0){
     // symbols
     OPEN_PAREN,
     CLOSE_PAREN,
@@ -11,11 +11,11 @@ enum class TokenType {
     ARROW,
 
     // operators
-    PLUS,
-    MINUS,
-    ASTERISK,
-    FORWARD_SLASH,
-    DOUBLE_ASTERISK,
+    PLUS(1),
+    MINUS(1),
+    ASTERISK(3),
+    FORWARD_SLASH(3),
+    DOUBLE_ASTERISK(5),
     LESS_THAN,
     GREATER_THAN,
     LESS_THAN_OR_EQUAL,
@@ -31,5 +31,9 @@ enum class TokenType {
     IF,
     ELSE,
     FOR,
-    PROC
+    PROC,
+
+    // delimiters for end of line/file
+    NEWLINE,
+    EOF
 }

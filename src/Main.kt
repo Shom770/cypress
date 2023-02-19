@@ -6,5 +6,6 @@ fun main() {
     val bufferedReader = File("src/test.cyp").bufferedReader()
     val text = bufferedReader.use { it.readText() }
     val tokens = Lexer(text).tokenize()
-    println(tokens)
+    val parser = Parser(tokens)
+    println(parser.parseExpr())
 }

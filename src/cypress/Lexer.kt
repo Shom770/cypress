@@ -32,36 +32,36 @@ class Lexer(private val text: String) {
 
     private fun lexOperator(index: Int, currentChar: Char): Token {
         return when (currentChar) {
-            '+' -> Token(TokenType.PLUS, span = index until index + 1)
-            '/' -> Token(TokenType.FORWARD_SLASH, span = index until index + 1)
+            '+' -> Token(TokenType.PLUS, span = index..index)
+            '/' -> Token(TokenType.FORWARD_SLASH, span = index..index)
             // Defining behavior for the operators -, ->, *, **, <, <=, >, >=
             '-' -> {
                 if (peekAhead() == '>') {
                     Token(TokenType.ARROW, span = index..advance().index)
                 }
                 else {
-                    Token(TokenType.MINUS, span = index until index + 1)
+                    Token(TokenType.MINUS, span = index..index)
                 }
             }
             '*' -> {
                 if (peekAhead() == '*') {
                     Token(TokenType.DOUBLE_ASTERISK, span = index..advance().index)
                 } else {
-                    Token(TokenType.ASTERISK, span = index until index + 1)
+                    Token(TokenType.ASTERISK, span = index..index)
                 }
             }
             '<' -> {
                 if (peekAhead() == '=') {
                     Token(TokenType.LESS_THAN_OR_EQUAL, span = index..advance().index)
                 } else {
-                    Token(TokenType.LESS_THAN, span = index until index + 1)
+                    Token(TokenType.LESS_THAN, span = index..index)
                 }
             }
             '>' -> {
                 if (peekAhead() == '=') {
                     Token(TokenType.GREATER_THAN_OR_EQUAL, span = index..advance().index)
                 } else {
-                    Token(TokenType.GREATER_THAN, span = index until index + 1)
+                    Token(TokenType.GREATER_THAN, span = index..index)
                 }
             }
             else -> throw CypressError.CypressSyntaxError("Invalid character: $currentChar")
@@ -110,17 +110,17 @@ class Lexer(private val text: String) {
 
     private fun lexMiscCharacters(index: Int, currentChar: Char): Token {
         return when (currentChar) {
-            '(' -> Token(TokenType.OPEN_PAREN, span = index until index + 1)
-            ')' -> Token(TokenType.CLOSE_PAREN, span = index until index + 1)
-            '{' -> Token(TokenType.OPEN_BRACE, span = index until index + 1)
-            '}' -> Token(TokenType.CLOSE_BRACE, span = index until index + 1)
-            ',' -> Token(TokenType.COMMA, span = index until index + 1)
+            '(' -> Token(TokenType.OPEN_PAREN, span = index..index)
+            ')' -> Token(TokenType.CLOSE_PAREN, span = index..index)
+            '{' -> Token(TokenType.OPEN_BRACE, span = index..index)
+            '}' -> Token(TokenType.CLOSE_BRACE, span = index..index)
+            ',' -> Token(TokenType.COMMA, span = index..index)
             '=' -> {
                 if (peekAhead() == '=') {
                     Token(TokenType.EQUALS, span = index..advance().index)
                 }
                 else {
-                    Token(TokenType.ASSIGN, span = index until index + 1)
+                    Token(TokenType.ASSIGN, span = index..index)
                 }
             }
             else -> throw CypressError.CypressSyntaxError("Invalid character: $currentChar at index $index")
@@ -132,7 +132,11 @@ class Lexer(private val text: String) {
             val (index, currentChar) = advance()
 
             // Deal with when we're lexing whitespace
-            if (currentChar.isWhitespace()) {
+            if (!currentChar.toString().matches(Regex("."))) {
+                tokens.add(Token(TokenType.NEWLINE, span = index..index))
+                continue
+            }
+            else if (currentChar.isWhitespace()) {
                 continue
             }
 
