@@ -10,6 +10,7 @@ class Parser(private val tokens: MutableList<Token>) {
         }
 
         repeat(n - 1) { tokenIterator.next() }
+
         return tokenIterator.next()
     }
 
@@ -32,7 +33,7 @@ class Parser(private val tokens: MutableList<Token>) {
     }
 
     private fun parseWithBindingPower(bindingPower: Int): Node {
-        var lhs: Node = Node.NumberNode(advance())
+        var lhs: Node = matchNode(advance())
         var nextToken = peekAhead()
 
         while (
@@ -47,5 +48,13 @@ class Parser(private val tokens: MutableList<Token>) {
         }
 
         return lhs
+    }
+
+    private fun matchNode(token: Token): Node {
+        return when (token.kind) {
+            in setOf(TokenType.INT, TokenType.FLOAT) -> Node.NumberNode(token)
+            in setOf(TokenType.PLUS, TokenType.MINUS) -> Node.UnaryNode(token.kind, advance())
+            else -> throw CypressError.CypressSyntaxError("Invalid usage of token: $token")
+        }
     }
 }
