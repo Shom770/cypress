@@ -30,7 +30,7 @@ class Lexer(private val text: String) {
         return text.getOrNull(textIterator.nextIndex())
     }
 
-    private fun parseOperator(index: Int, currentChar: Char): Token {
+    private fun lexOperator(index: Int, currentChar: Char): Token {
         return when (currentChar) {
             '+' -> Token(TokenType.PLUS, span = index until index + 1)
             '/' -> Token(TokenType.FORWARD_SLASH, span = index until index + 1)
@@ -68,7 +68,7 @@ class Lexer(private val text: String) {
         }
     }
 
-    private fun parseIdentifier(index: Int): Token {
+    private fun lexIdentifier(index: Int): Token {
         val endOfIdentifier = text.substring(
             index until text.length
         ).indexOfFirst {
@@ -86,7 +86,7 @@ class Lexer(private val text: String) {
         }
     }
 
-    private fun parseNumber(index: Int): Token {
+    private fun lexNumber(index: Int): Token {
         val endOfNumber = text.substring(
             index until text.length
         ).indexOfFirst {
@@ -108,7 +108,7 @@ class Lexer(private val text: String) {
         }
     }
 
-    private fun parseMiscCharacters(index: Int, currentChar: Char): Token {
+    private fun lexMiscCharacters(index: Int, currentChar: Char): Token {
         return when (currentChar) {
             '(' -> Token(TokenType.OPEN_PAREN, span = index until index + 1)
             ')' -> Token(TokenType.CLOSE_PAREN, span = index until index + 1)
@@ -138,10 +138,10 @@ class Lexer(private val text: String) {
 
             tokens.add(
                 when (currentChar) {
-                    in validOperators -> parseOperator(index, currentChar)
-                    in miscCharacters -> parseMiscCharacters(index, currentChar)
-                    in validDigits -> parseNumber(index)
-                    in validIdentifiers -> parseIdentifier(index)
+                    in validOperators -> lexOperator(index, currentChar)
+                    in miscCharacters -> lexMiscCharacters(index, currentChar)
+                    in validDigits -> lexNumber(index)
+                    in validIdentifiers -> lexIdentifier(index)
                     else -> throw CypressError.CypressSyntaxError("Invalid character: $currentChar at index: $index")
                 }
             )
