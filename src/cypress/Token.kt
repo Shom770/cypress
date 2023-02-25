@@ -2,11 +2,11 @@ package cypress
 
 
 class Token(val kind: TokenType, private val span: IntRange) {
-    fun text(input_str: String): String {
-        return input_str.slice(span)
+    fun text(inputString: String): String {
+        return inputString.substring(span)
     }
 
     override fun toString(): String {
-        return "Token(kind=$kind, span=$span)"
+        return "Token(kind = $kind, span = $span)"
     }
 }

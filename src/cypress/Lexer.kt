@@ -10,6 +10,9 @@ class Lexer(private val text: String) {
     private val validDigits = "0123456789."
     private val validIdentifiers = ('A'..'z').joinToString("").replace("[\\]^_`", "_")
     private val keywords = hashMapOf(
+        "not" to TokenType.NOT,
+        "and" to TokenType.AND,
+        "or" to TokenType.OR,
         "if" to TokenType.IF,
         "else" to TokenType.ELSE,
         "for" to TokenType.FOR,

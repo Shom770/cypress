@@ -11,16 +11,16 @@ enum class TokenType(val precedence: Int = 0){
     ARROW,
 
     // operators
-    PLUS(1),
-    MINUS(1),
-    ASTERISK(3),
-    FORWARD_SLASH(3),
-    DOUBLE_ASTERISK(5),
-    LESS_THAN,
-    GREATER_THAN,
-    LESS_THAN_OR_EQUAL,
-    GREATER_THAN_OR_EQUAL,
-    EQUALS,
+    PLUS(3),
+    MINUS(3),
+    ASTERISK(5),
+    FORWARD_SLASH(5),
+    DOUBLE_ASTERISK(7),
+    LESS_THAN(1),
+    GREATER_THAN(1),
+    LESS_THAN_OR_EQUAL(1),
+    GREATER_THAN_OR_EQUAL(1),
+    EQUALS(1),
 
     // identifiers and literals
     INT,
@@ -28,6 +28,9 @@ enum class TokenType(val precedence: Int = 0){
     IDENTIFIER,
 
     // keywords
+    NOT,
+    AND(11),
+    OR(9),
     IF,
     ELSE,
     FOR,
@@ -35,5 +38,17 @@ enum class TokenType(val precedence: Int = 0){
 
     // delimiters for end of line/file
     NEWLINE,
-    EOF
+    EOF;
+
+    companion object {
+        val conditionalTokens = hashSetOf(
+            TokenType.LESS_THAN,
+            TokenType.LESS_THAN_OR_EQUAL,
+            TokenType.GREATER_THAN,
+            TokenType.GREATER_THAN_OR_EQUAL,
+            TokenType.EQUALS,
+            TokenType.AND,
+            TokenType.OR
+        )
+    }
 }

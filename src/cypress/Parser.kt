@@ -38,12 +38,15 @@ class Parser(private val tokens: MutableList<Token>) {
 
         while (
             nextToken.kind.precedence >= bindingPower
-            && nextToken.kind !in setOf(TokenType.NEWLINE, TokenType.EOF)
+            && nextToken.kind !in hashSetOf(TokenType.NEWLINE, TokenType.EOF)
         ) {
             advance()
             val rhs = parseWithBindingPower(bindingPower + 1)
-
-            lhs = Node.ArithmeticNode(lhs, nextToken.kind, rhs)
+            lhs = if (nextToken.kind in TokenType.conditionalTokens) {
+                Node.ConditionalNode(lhs, nextToken.kind, rhs)
+            } else {
+                Node.ArithmeticNode(lhs, nextToken.kind, rhs)
+            }
             nextToken = peekAhead()
         }
 
@@ -52,9 +55,22 @@ class Parser(private val tokens: MutableList<Token>) {
 
     private fun matchNode(token: Token): Node {
         return when (token.kind) {
-            in setOf(TokenType.INT, TokenType.FLOAT) -> Node.NumberNode(token)
-            in setOf(TokenType.PLUS, TokenType.MINUS) -> Node.UnaryNode(token.kind, advance())
+            in hashSetOf(TokenType.INT, TokenType.FLOAT) -> Node.NumberNode(token)
+            // 100 used as a sentinel value to only parse numbers
+            in hashSetOf(TokenType.PLUS, TokenType.MINUS) -> Node.UnaryNode(token.kind, parseWithBindingPower(100))
+            TokenType.IDENTIFIER -> parseIdentifier(token)
+            TokenType.NOT -> Node.UnaryNode(token.kind, parseWithBindingPower(0))
             else -> throw CypressError.CypressSyntaxError("Invalid usage of token: $token")
+        }
+    }
+
+    private fun parseIdentifier(token: Token): Node {
+        return if (peekAhead().kind == TokenType.ASSIGN) {
+            advance()
+            Node.VarAssignNode(token, parseWithBindingPower(0))
+        }
+        else {
+            Node.VarAccessNode(token)
         }
     }
 }
