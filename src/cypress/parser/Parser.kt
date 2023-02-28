@@ -1,4 +1,8 @@
-package cypress
+package cypress.parser
+
+import cypress.CypressError
+import cypress.lexer.Token
+import cypress.lexer.TokenType
 
 class Parser(private val tokens: MutableList<Token>) {
     private val tokenIterator = tokens.listIterator()

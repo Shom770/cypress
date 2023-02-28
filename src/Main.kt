@@ -1,6 +1,7 @@
 import java.io.File
 
-import cypress.*
+import cypress.lexer.Lexer
+import cypress.parser.Parser
 
 fun main() {
     val bufferedReader = File("src/test.cyp").bufferedReader()

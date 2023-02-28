@@ -1,4 +1,4 @@
-package cypress
+package cypress.lexer
 
 enum class TokenType(val precedence: Int = 0){
     // symbols
@@ -42,13 +42,13 @@ enum class TokenType(val precedence: Int = 0){
 
     companion object {
         val conditionalTokens = hashSetOf(
-            TokenType.LESS_THAN,
-            TokenType.LESS_THAN_OR_EQUAL,
-            TokenType.GREATER_THAN,
-            TokenType.GREATER_THAN_OR_EQUAL,
-            TokenType.EQUALS,
-            TokenType.AND,
-            TokenType.OR
+            LESS_THAN,
+            LESS_THAN_OR_EQUAL,
+            GREATER_THAN,
+            GREATER_THAN_OR_EQUAL,
+            EQUALS,
+            AND,
+            OR
         )
     }
 }

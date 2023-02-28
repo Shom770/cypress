@@ -1,4 +1,4 @@
-package cypress
+package cypress.lexer
 
 
 class Token(val kind: TokenType, private val span: IntRange) {

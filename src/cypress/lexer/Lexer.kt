@@ -1,4 +1,6 @@
-package cypress
+package cypress.lexer
+
+import cypress.CypressError
 
 
 class Lexer(private val text: String) {

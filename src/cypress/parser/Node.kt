@@ -1,4 +1,7 @@
-package cypress
+package cypress.parser
+
+import cypress.lexer.Token
+import cypress.lexer.TokenType
 
 sealed class Node {
     data class ArithmeticNode(val leftNode: Node, val operator: TokenType, val rightNode: Node) : Node()
