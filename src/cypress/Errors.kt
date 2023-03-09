@@ -10,4 +10,10 @@ sealed class CypressError(message: String) : Exception(message) {
      * @param message The error message passed into the syntax error when thrown.
      */
     class CypressSyntaxError(message: String) : CypressError(message)
+
+    /**
+     * A class deriving from Exception to represent a type error in Cypress.
+     * @param message The error message passed into the syntax error when thrown.
+     */
+    class CypressTypeError(message: String) : CypressError(message)
 }
