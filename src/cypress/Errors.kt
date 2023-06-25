@@ -7,7 +7,7 @@ package cypress
 sealed class CypressError(message: String) : Exception(message) {
     /**
      * A class deriving from Exception to represent a syntax error in Cypress.
-     * @param message The error message passed into the syntax error when thrown.
+     * @param message The error message passed into the error when thrown.
      */
     class CypressSyntaxError(message: String) : CypressError(message)
 
@@ -16,4 +16,11 @@ sealed class CypressError(message: String) : Exception(message) {
      * @param message The error message passed into the syntax error when thrown.
      */
     class CypressTypeError(message: String) : CypressError(message)
+
+    class CypressVariableNotFoundError(message: String) : CypressError(message)
+
+    /**
+     * A class deriving from Exception to represent when a variable lookup failed in Cypress.
+     * @param message The error message passed into the variable not being found error when thrown.
+     */
 }

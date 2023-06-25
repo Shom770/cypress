@@ -3,6 +3,7 @@ import java.io.File
 import cypress.lexer.Lexer
 import cypress.parser.Parser
 import cypress.interpreter.Interpreter
+import cypress.interpreter.types.CypressType
 
 fun main() {
     val bufferedReader = File("src/test.cyp").bufferedReader()
@@ -11,5 +12,5 @@ fun main() {
     val parser = Parser(tokens).parseExpr()
     val interpreter = Interpreter(text)
 
-    println(parser.map { interpreter.walk<Any>(it) })
+    println(parser.map { interpreter.walk<CypressType<*>>(it) })
 }
