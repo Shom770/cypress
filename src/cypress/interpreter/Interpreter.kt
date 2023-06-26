@@ -1,22 +1,24 @@
 package cypress.interpreter
 
 import cypress.CypressError
-import cypress.interpreter.types.CypressDouble
-import cypress.interpreter.types.CypressInt
-import cypress.interpreter.types.CypressNumber
+import cypress.interpreter.types.*
 import cypress.lexer.TokenType
 import cypress.parser.Node
 
 class Interpreter(private val sourceText: String) {
-    fun <T> walk(node: Node): T {
+    private val globalSymbolTable = SymbolTable()
+
+    fun <T> walk(node: Node, symbolTable: SymbolTable = globalSymbolTable): T {
         return when (node) {
             is Node.ArithmeticNode -> parseArithmeticNode(node)
             is Node.NumberNode -> parseNumberNode(node)
+            is Node.VarAssignNode -> parseVarAssignNode(node, symbolTable)
+            is Node.VarAccessNode -> parseVarAccessNode(node, symbolTable)
             else -> throw CypressError.CypressTypeError("Can't process node $node")
         }
     }
 
-    private inline fun <reified T : CypressNumber> parseArithmeticNode(node: Node.ArithmeticNode): T {
+    private inline fun <reified T : CypressArithmeticTypes> parseArithmeticNode(node: Node.ArithmeticNode): T {
         val leftNode = walk<CypressNumber>(node.leftNode)
         val rightNode = walk<CypressNumber>(node.rightNode)
 
@@ -38,5 +40,22 @@ class Interpreter(private val sourceText: String) {
                 "Underlying token for number node ${node.underlyingToken} is invalid."
             )
         } as T
+    }
+
+    private inline fun <reified T : CypressType<Any>> parseVarAssignNode(
+        node: Node.VarAssignNode,
+        symbolTable: SymbolTable
+    ) : T {
+        val nodeValue = walk<CypressType<Any>>(node.underlyingNode)
+        return symbolTable.setVariable(node.name.text(sourceText), nodeValue).let {
+            nodeValue as T
+        }
+    }
+
+    private inline fun <reified T: CypressType<Any>> parseVarAccessNode(
+        node: Node.VarAccessNode,
+        symbolTable: SymbolTable
+    ) : T {
+        return symbolTable.lookupVariable(node.name.text(sourceText)) as T
     }
 }
