@@ -28,7 +28,7 @@ class Parser(private val tokens: MutableList<Token>) {
 
         while (tokenIterator.hasNext()) {
             if (peekAhead().kind == TokenType.NEWLINE) {
-                advance(2)
+                advance(1)
             }
             nodes.add(parseWithBindingPower(0))
         }
@@ -36,16 +36,21 @@ class Parser(private val tokens: MutableList<Token>) {
         return nodes
     }
 
-    private fun parseWithBindingPower(bindingPower: Int): Node {
+    private fun parseWithBindingPower(bindingPower: Int, untilTokenType: TokenType? = null): Node {
+        // Advance across empty newlines
+        while (peekAhead().kind == TokenType.NEWLINE) {
+            advance()
+        }
+
         var lhs: Node = matchNode(advance())
         var nextToken = peekAhead()
 
         while (
             nextToken.kind.precedence >= bindingPower
-            && nextToken.kind !in hashSetOf(TokenType.NEWLINE, TokenType.EOF)
+            && nextToken.kind !in hashSetOf(TokenType.NEWLINE, TokenType.EOF, untilTokenType)
         ) {
             advance()
-            val rhs = parseWithBindingPower(bindingPower + 1)
+            val rhs = parseWithBindingPower(bindingPower + 1, untilTokenType)
             lhs = if (nextToken.kind in TokenType.conditionalTokens) {
                 Node.ConditionalNode(lhs, nextToken.kind, rhs)
             } else {
@@ -54,16 +59,22 @@ class Parser(private val tokens: MutableList<Token>) {
             nextToken = peekAhead()
         }
 
+        if (nextToken.kind == untilTokenType) {
+            advance()
+        }
+
         return lhs
     }
 
     private fun matchNode(token: Token): Node {
         return when (token.kind) {
             in hashSetOf(TokenType.INT, TokenType.FLOAT) -> Node.NumberNode(token)
+            TokenType.STRING -> Node.StringNode(token)
             // 100 used as a sentinel value to only parse numbers
             in hashSetOf(TokenType.PLUS, TokenType.MINUS) -> Node.UnaryNode(token.kind, parseWithBindingPower(100))
             TokenType.IDENTIFIER -> parseIdentifier(token)
             TokenType.NOT -> Node.UnaryNode(token.kind, parseWithBindingPower(0))
+            TokenType.OPEN_PAREN -> parseWithBindingPower(0, TokenType.CLOSE_PAREN)
             else -> throw CypressError.CypressSyntaxError("Invalid usage of token: $token")
         }
     }

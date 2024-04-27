@@ -49,4 +49,12 @@ class CypressDouble(override val value: Double) : CypressNumber {
     override fun toString(): String {
         return value.toString()
     }
+
+    override fun compareTo(other: CypressType<Number>): CypressInt {
+        return CypressInt(value.compareTo(other.value.toDouble()))
+    }
+
+    override fun asBoolean(): CypressInt {
+        return CypressInt(value != 0.0)
+    }
 }

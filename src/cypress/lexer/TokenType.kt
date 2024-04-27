@@ -9,10 +9,11 @@ enum class TokenType(val precedence: Int = 0){
     COMMA,
     ASSIGN,
     ARROW,
+    DOT,
 
     // operators
-    PLUS(3),
-    MINUS(3),
+    PLUS,
+    MINUS,
     ASTERISK(5),
     FORWARD_SLASH(5),
     DOUBLE_ASTERISK(7),
@@ -26,11 +27,12 @@ enum class TokenType(val precedence: Int = 0){
     INT,
     FLOAT,
     IDENTIFIER,
+    STRING,
 
     // keywords
-    NOT,
-    AND(11),
-    OR(9),
+    NOT(11),
+    AND,
+    OR,
     IF,
     ELSE,
     FOR,

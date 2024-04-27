@@ -8,7 +8,7 @@ class Lexer(private val text: String) {
     private val textIterator = text.toList().listIterator()
 
     private val validOperators = "+-*/<>"
-    private val miscCharacters = "(){},="
+    private val miscCharacters = "(){},=."
     private val validDigits = "0123456789."
     private val validIdentifiers = ('A'..'z').joinToString("").replace("[\\]^_`", "_")
     private val keywords = hashMapOf(
@@ -113,6 +113,19 @@ class Lexer(private val text: String) {
         }
     }
 
+    private fun lexString(index: Int): Token {
+        val endOfString = text.substring(
+            index until text.length
+        ).indexOfFirst {
+            it == '"'
+        }.takeIf {
+            it >= 0
+        } ?: (text.length - index)
+        val spanOfString = index until endOfString + index
+
+        return Token(TokenType.STRING, spanOfString).also { advance(spanOfString.last - spanOfString.first) }
+    }
+
     private fun lexMiscCharacters(index: Int, currentChar: Char): Token {
         return when (currentChar) {
             '(' -> Token(TokenType.OPEN_PAREN, span = index..index)
@@ -120,6 +133,7 @@ class Lexer(private val text: String) {
             '{' -> Token(TokenType.OPEN_BRACE, span = index..index)
             '}' -> Token(TokenType.CLOSE_BRACE, span = index..index)
             ',' -> Token(TokenType.COMMA, span = index..index)
+            '.' -> Token(TokenType.DOT, span = index..index)
             '=' -> {
                 if (peekAhead() == '=') {
                     Token(TokenType.EQUALS, span = index..advance().index)
@@ -147,6 +161,10 @@ class Lexer(private val text: String) {
 
             tokens.add(
                 when (currentChar) {
+                    '"' -> {
+                        advance(1)
+                        lexString(index + 1).also { advance(1) }
+                    }
                     in validOperators -> lexOperator(index, currentChar)
                     in miscCharacters -> lexMiscCharacters(index, currentChar)
                     in validDigits -> lexNumber(index)

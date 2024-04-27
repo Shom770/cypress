@@ -16,4 +16,12 @@ class CypressString(override val value: String) : CypressType<String> {
     override fun toString(): String {
         return value
     }
+
+    override fun compareTo(other: CypressType<String>): CypressInt {
+        return CypressInt(value.compareTo(other.value))
+    }
+
+    override fun asBoolean(): CypressInt {
+        return CypressInt(value.isNotEmpty())
+    }
 }
