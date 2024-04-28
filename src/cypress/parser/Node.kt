@@ -11,4 +11,7 @@ sealed class Node {
     data class UnaryNode(val symbol: TokenType, val underlyingNode: Node) : Node()
     data class VarAssignNode(val name: Token, val underlyingNode: Node) : Node()
     data class VarAccessNode(val name: Token) : Node()
+    data class FunctionCallNode(val functionNameNode: Node.VarAccessNode, val parameters: List<Node>) : Node()
+    data class MethodCallNode(val methodTarget: Node, val functionCallNode: FunctionCallNode) : Node()
+    object EmptyNode : Node()  // Used to signify EOFs
 }

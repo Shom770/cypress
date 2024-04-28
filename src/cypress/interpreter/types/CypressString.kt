@@ -24,4 +24,13 @@ class CypressString(override val value: String) : CypressType<String> {
     override fun asBoolean(): CypressInt {
         return CypressInt(value.isNotEmpty())
     }
+
+    // Built-in methods for the String type
+    fun concat(other: CypressString): CypressString {
+        return CypressString(value + other.value)
+    }
+
+    fun replace(original: CypressString, new: CypressString): CypressString {
+        return CypressString(value.replace(original.value, new.value))
+    }
 }

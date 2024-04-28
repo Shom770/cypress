@@ -36,10 +36,14 @@ class Parser(private val tokens: MutableList<Token>) {
         return nodes
     }
 
-    private fun parseWithBindingPower(bindingPower: Int, untilTokenType: TokenType? = null): Node {
+    private fun parseWithBindingPower(bindingPower: Int, untilTokenTypes: List<TokenType>? = null): Node {
         // Advance across empty newlines
         while (peekAhead().kind == TokenType.NEWLINE) {
             advance()
+        }
+
+        if (peekAhead().kind == TokenType.EOF) {
+            return Node.EmptyNode
         }
 
         var lhs: Node = matchNode(advance())
@@ -47,19 +51,28 @@ class Parser(private val tokens: MutableList<Token>) {
 
         while (
             nextToken.kind.precedence >= bindingPower
-            && nextToken.kind !in hashSetOf(TokenType.NEWLINE, TokenType.EOF, untilTokenType)
+            && nextToken.kind !in hashSetOf(TokenType.NEWLINE, TokenType.EOF, *untilTokenTypes?.toTypedArray() ?: arrayOf())
         ) {
             advance()
-            val rhs = parseWithBindingPower(bindingPower + 1, untilTokenType)
-            lhs = if (nextToken.kind in TokenType.conditionalTokens) {
-                Node.ConditionalNode(lhs, nextToken.kind, rhs)
-            } else {
-                Node.ArithmeticNode(lhs, nextToken.kind, rhs)
+            val rhs = parseWithBindingPower(bindingPower + 1, untilTokenTypes)
+
+            if (nextToken.kind in TokenType.conditionalTokens) {
+               lhs = Node.ConditionalNode(lhs, nextToken.kind, rhs)
+            } else if (nextToken.kind == TokenType.DOT) {
+                lhs = Node.MethodCallNode(lhs, parseFunctionCall())
+
+                if (peekAhead().kind != TokenType.EOF) {
+                    advance() // Advance past the terminating character of the function call.
+                }
             }
+            else if (untilTokenTypes != null && nextToken.kind !in untilTokenTypes || untilTokenTypes == null) {
+                lhs = Node.ArithmeticNode(lhs, nextToken.kind, rhs)
+            }
+
             nextToken = peekAhead()
         }
 
-        if (nextToken.kind == untilTokenType) {
+        if (untilTokenTypes != null && nextToken.kind in untilTokenTypes) {
             advance()
         }
 
@@ -74,7 +87,7 @@ class Parser(private val tokens: MutableList<Token>) {
             in hashSetOf(TokenType.PLUS, TokenType.MINUS) -> Node.UnaryNode(token.kind, parseWithBindingPower(100))
             TokenType.IDENTIFIER -> parseIdentifier(token)
             TokenType.NOT -> Node.UnaryNode(token.kind, parseWithBindingPower(0))
-            TokenType.OPEN_PAREN -> parseWithBindingPower(0, TokenType.CLOSE_PAREN)
+            TokenType.OPEN_PAREN -> parseWithBindingPower(0, listOf(TokenType.CLOSE_PAREN))
             else -> throw CypressError.CypressSyntaxError("Invalid usage of token: $token")
         }
     }
@@ -87,5 +100,29 @@ class Parser(private val tokens: MutableList<Token>) {
         else {
             Node.VarAccessNode(token)
         }
+    }
+
+    private fun parseFunctionCall(): Node.FunctionCallNode {
+        // Assume that the parser is on the dot token and advance
+        val methodName = if (tokens[tokenIterator.nextIndex() - 1].kind == TokenType.DOT) {
+            parseIdentifier(advance())
+        } else {
+            parseIdentifier(tokens[tokenIterator.nextIndex() - 1])
+        }
+        val parameters = mutableListOf<Node>()
+
+        // Advance through the open parentheses
+        if (peekAhead().kind == TokenType.OPEN_PAREN) {
+            advance()
+        } else {
+            throw CypressError.CypressSyntaxError("Looks like you're missing a open parentheses when calling a function.")
+        }
+
+        while (peekAhead().kind !in hashSetOf(TokenType.NEWLINE, TokenType.EOF, TokenType.CLOSE_PAREN)) {
+            val parameterNode = parseWithBindingPower(1, listOf(TokenType.COMMA, TokenType.CLOSE_PAREN))
+            parameters.add(parameterNode)
+        }
+
+        return Node.FunctionCallNode(methodName as Node.VarAccessNode, parameters.toList())
     }
 }
