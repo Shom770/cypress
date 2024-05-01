@@ -18,6 +18,7 @@ class Interpreter(private val sourceText: String) {
             is Node.VarAssignNode -> parseVarAssignNode(node, symbolTable)
             is Node.VarAccessNode -> parseVarAccessNode(node, symbolTable)
             is Node.MethodCallNode -> parseMethodCallNode(node)
+            is Node.FunctionCallNode -> parseFunctionCallNode(node, symbolTable)
             is Node.EmptyNode -> CypressNull(null) as T
             else -> throw CypressError.CypressTypeError("Can't process node $node")
         }
@@ -82,6 +83,24 @@ class Interpreter(private val sourceText: String) {
         symbolTable: SymbolTable
     ) : T {
         return symbolTable.lookupVariable(node.name.text(sourceText)) as T
+    }
+
+    private inline fun <reified T: CypressType<Any>> parseFunctionCallNode(
+        node: Node.FunctionCallNode,
+        symbolTable: SymbolTable
+    ) : T {
+        val methodName = node.functionNameNode.name.text(sourceText)
+        val evaluatedParameters = node.parameters.map { walk<CypressType<Any>>(it) }
+
+        return if (symbolTable.underlyingTable.containsKey(methodName)) {
+            symbolTable.lookupVariable(methodName) as T  // TODO: Add implementation for this later
+        } else {
+            (CypressBuiltIns
+                .javaClass
+                .methods
+                .first { it.name == methodName }
+                .invoke(CypressBuiltIns, *evaluatedParameters.toTypedArray()) ?: CypressNull(null)) as T
+        }
     }
 
     private inline fun <reified T: CypressType<Any>> parseMethodCallNode(node: Node.MethodCallNode) : T {

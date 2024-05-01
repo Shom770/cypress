@@ -54,19 +54,14 @@ class Parser(private val tokens: MutableList<Token>) {
             && nextToken.kind !in hashSetOf(TokenType.NEWLINE, TokenType.EOF, *untilTokenTypes?.toTypedArray() ?: arrayOf())
         ) {
             advance()
-            val rhs = parseWithBindingPower(bindingPower + 1, untilTokenTypes)
 
             if (nextToken.kind in TokenType.conditionalTokens) {
-               lhs = Node.ConditionalNode(lhs, nextToken.kind, rhs)
+               lhs = Node.ConditionalNode(lhs, nextToken.kind, parseWithBindingPower(bindingPower + 1, untilTokenTypes))
             } else if (nextToken.kind == TokenType.DOT) {
                 lhs = Node.MethodCallNode(lhs, parseFunctionCall())
-
-                if (peekAhead().kind != TokenType.EOF) {
-                    advance() // Advance past the terminating character of the function call.
-                }
             }
             else if (untilTokenTypes != null && nextToken.kind !in untilTokenTypes || untilTokenTypes == null) {
-                lhs = Node.ArithmeticNode(lhs, nextToken.kind, rhs)
+                lhs = Node.ArithmeticNode(lhs, nextToken.kind, parseWithBindingPower(bindingPower + 1, untilTokenTypes))
             }
 
             nextToken = peekAhead()
@@ -97,17 +92,33 @@ class Parser(private val tokens: MutableList<Token>) {
             advance()
             Node.VarAssignNode(token, parseWithBindingPower(0))
         }
+        else if (peekAhead().kind == TokenType.OPEN_PAREN) {
+            parseFunctionCall(token)
+        }
         else {
             Node.VarAccessNode(token)
         }
     }
 
-    private fun parseFunctionCall(): Node.FunctionCallNode {
+    // Used only for parsing function calls so that recursion doesn't cause function calls to be parsed wrong.
+    private fun parseRawIdentifier(token: Token): Node {
+        return if (peekAhead().kind == TokenType.ASSIGN) {
+            advance()
+            Node.VarAssignNode(token, parseWithBindingPower(0))
+        }
+        else {
+            Node.VarAccessNode(token)
+        }
+    }
+
+    private fun parseFunctionCall(functionName: Token? = null): Node.FunctionCallNode {
         // Assume that the parser is on the dot token and advance
-        val methodName = if (tokens[tokenIterator.nextIndex() - 1].kind == TokenType.DOT) {
-            parseIdentifier(advance())
+        val functionName = if (tokens[tokenIterator.nextIndex() - 1].kind == TokenType.DOT) {
+            parseRawIdentifier(advance())
+        } else if (functionName == null){
+            parseRawIdentifier(tokens[tokenIterator.nextIndex() - 1])
         } else {
-            parseIdentifier(tokens[tokenIterator.nextIndex() - 1])
+            Node.VarAccessNode(functionName)
         }
         val parameters = mutableListOf<Node>()
 
@@ -119,10 +130,15 @@ class Parser(private val tokens: MutableList<Token>) {
         }
 
         while (peekAhead().kind !in hashSetOf(TokenType.NEWLINE, TokenType.EOF, TokenType.CLOSE_PAREN)) {
-            val parameterNode = parseWithBindingPower(1, listOf(TokenType.COMMA, TokenType.CLOSE_PAREN))
+            val parameterNode = parseWithBindingPower(0, listOf(TokenType.COMMA, TokenType.CLOSE_PAREN))
             parameters.add(parameterNode)
         }
 
-        return Node.FunctionCallNode(methodName as Node.VarAccessNode, parameters.toList())
+        // Consume the rest of the useless closing parentheses
+        while (peekAhead().kind == TokenType.CLOSE_PAREN) {
+            advance()
+        }
+
+        return Node.FunctionCallNode(functionName as Node.VarAccessNode, parameters.toList())
     }
 }
