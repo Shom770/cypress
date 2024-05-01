@@ -13,5 +13,6 @@ sealed class Node {
     data class VarAccessNode(val name: Token) : Node()
     data class FunctionCallNode(val functionNameNode: Node.VarAccessNode, val parameters: List<Node>) : Node()
     data class MethodCallNode(val methodTarget: Node, val functionCallNode: FunctionCallNode) : Node()
+    data class BlockNode(val nodes: List<Node>) : Node()  // Signifies a block of code (marked by braces}
     object EmptyNode : Node()  // Used to signify EOFs
 }

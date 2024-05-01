@@ -23,14 +23,23 @@ class Parser(private val tokens: MutableList<Token>) {
         return tokens.getOrNull(tokenIterator.nextIndex()) ?: Token(TokenType.EOF, span = 0..0)
     }
 
-    fun parseExpr(): List<Node> {
+    fun parseExpr(untilTokenTypes: List<TokenType>? = null): List<Node> {
         val nodes = mutableListOf<Node>()
 
         while (tokenIterator.hasNext()) {
             if (peekAhead().kind == TokenType.NEWLINE) {
                 advance(1)
             }
-            nodes.add(parseWithBindingPower(0))
+
+            if (peekAhead().kind in (untilTokenTypes?.toTypedArray() ?: arrayOf())) {
+                advance()
+                break
+            }
+            else if (peekAhead().kind == TokenType.EOF) {
+                break
+            }
+
+            nodes.add(parseWithBindingPower(0, untilTokenTypes))
         }
 
         return nodes
@@ -83,6 +92,7 @@ class Parser(private val tokens: MutableList<Token>) {
             TokenType.IDENTIFIER -> parseIdentifier(token)
             TokenType.NOT -> Node.UnaryNode(token.kind, parseWithBindingPower(0))
             TokenType.OPEN_PAREN -> parseWithBindingPower(0, listOf(TokenType.CLOSE_PAREN))
+            TokenType.OPEN_BRACE -> Node.BlockNode(parseExpr(listOf(TokenType.CLOSE_BRACE)))
             else -> throw CypressError.CypressSyntaxError("Invalid usage of token: $token")
         }
     }

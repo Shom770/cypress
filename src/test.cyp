@@ -1,3 +1,6 @@
-x = "testing name"
-y = "shayaan"
-print(x.concat(x.concat(y)))
+print(2)
+
+{
+    x = 2
+    y = 3
+}
