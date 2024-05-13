@@ -23,4 +23,8 @@ class SymbolTable(private val parent: SymbolTable? = null) {
             )
         )
     }
+
+    fun containsVariable(name: String) : Boolean {
+        return underlyingTable.containsKey(name) || parent?.containsVariable(name) ?: false
+    }
 }

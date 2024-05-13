@@ -106,7 +106,7 @@ class Interpreter(private val sourceText: String) {
         val methodName = node.functionNameNode.name.text(sourceText)
         val evaluatedParameters = node.parameters.map { walk<CypressType<Any>>(it, symbolTable) }
 
-        return if (symbolTable.underlyingTable.containsKey(methodName)) {
+        return if (symbolTable.containsVariable(methodName)) {
             val procedure = symbolTable.lookupVariable(methodName) as CypressProcedure
 
             if (procedure.parameters.size != evaluatedParameters.size) {
