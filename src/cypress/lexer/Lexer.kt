@@ -77,7 +77,7 @@ class Lexer(private val text: String) {
         val endOfIdentifier = text.substring(
             index until text.length
         ).indexOfFirst {
-            it !in validIdentifiers
+            it !in (validIdentifiers + "0123456789")
         }.takeIf {
             it >= 0
         } ?: (text.length - index)

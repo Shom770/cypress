@@ -90,11 +90,55 @@ class Parser(private val tokens: MutableList<Token>) {
             // 100 used as a sentinel value to only parse numbers
             in hashSetOf(TokenType.PLUS, TokenType.MINUS) -> Node.UnaryNode(token.kind, parseWithBindingPower(100))
             TokenType.IDENTIFIER -> parseIdentifier(token)
+            TokenType.PROC -> parseFunctionCreation()
             TokenType.NOT -> Node.UnaryNode(token.kind, parseWithBindingPower(0))
             TokenType.OPEN_PAREN -> parseWithBindingPower(0, listOf(TokenType.CLOSE_PAREN))
             TokenType.OPEN_BRACE -> Node.BlockNode(parseExpr(listOf(TokenType.CLOSE_BRACE)))
             else -> throw CypressError.CypressSyntaxError("Invalid usage of token: $token")
         }
+    }
+
+    private fun parseFunctionCreation(): Node {
+        val functionName = advance()
+        val parameters = mutableListOf<Token>()
+
+        // Advance through the open parentheses
+        if (peekAhead().kind == TokenType.OPEN_PAREN) {
+            advance()
+        } else {
+            throw CypressError.CypressSyntaxError("Looks like you're missing a open parentheses when creating a procedure.")
+        }
+
+        if (peekAhead().kind != TokenType.CLOSE_PAREN) {
+            while (peekAhead().kind !in hashSetOf(
+                    TokenType.NEWLINE,
+                    TokenType.EOF,
+                    TokenType.CLOSE_PAREN,
+                    TokenType.OPEN_BRACE
+                )
+            ) {
+                val parameterName = advance()
+                parameters.add(parameterName)
+
+                if (peekAhead().kind != TokenType.COMMA && peekAhead().kind != TokenType.CLOSE_PAREN) {
+                    throw CypressError.CypressSyntaxError("You're missing a comma or closing parentheses after a parameter in your procedure.")
+                }
+
+                advance()  // Advance past the comma
+            }
+        }
+        else {
+            advance()  // Advance past the open parentheses
+        }
+
+        advance()  // Advance past the closing parentheses
+
+        if (tokens[tokenIterator.nextIndex() - 1].kind != TokenType.OPEN_BRACE) {
+            throw CypressError.CypressSyntaxError("You're missing an open brace to open your procedure body.")
+        }
+
+        val blockNode = Node.BlockNode(parseExpr(listOf(TokenType.CLOSE_BRACE)))
+        return Node.ProcedureNode(functionName, parameters, blockNode)
     }
 
     private fun parseIdentifier(token: Token): Node {
@@ -139,7 +183,7 @@ class Parser(private val tokens: MutableList<Token>) {
             throw CypressError.CypressSyntaxError("Looks like you're missing a open parentheses when calling a function.")
         }
 
-        while (peekAhead().kind !in hashSetOf(TokenType.NEWLINE, TokenType.EOF, TokenType.CLOSE_PAREN)) {
+        while (tokens[tokenIterator.nextIndex() - 1].kind !in hashSetOf(TokenType.NEWLINE, TokenType.EOF, TokenType.CLOSE_PAREN)) {
             val parameterNode = parseWithBindingPower(0, listOf(TokenType.COMMA, TokenType.CLOSE_PAREN))
             parameters.add(parameterNode)
         }
