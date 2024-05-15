@@ -17,6 +17,7 @@ class Lexer(private val text: String) {
         "or" to TokenType.OR,
         "if" to TokenType.IF,
         "else" to TokenType.ELSE,
+        "elif" to TokenType.ELIF,
         "for" to TokenType.FOR,
         "proc" to TokenType.PROC
     )

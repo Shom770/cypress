@@ -35,6 +35,7 @@ enum class TokenType(val precedence: Int = 0){
     OR,
     IF,
     ELSE,
+    ELIF,
     FOR,
     PROC,
 

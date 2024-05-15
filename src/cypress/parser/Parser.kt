@@ -183,7 +183,10 @@ class Parser(private val tokens: MutableList<Token>) {
             throw CypressError.CypressSyntaxError("Looks like you're missing a open parentheses when calling a function.")
         }
 
-        while (tokens[tokenIterator.nextIndex() - 1].kind !in hashSetOf(TokenType.NEWLINE, TokenType.EOF, TokenType.CLOSE_PAREN)) {
+        while (
+            tokens[tokenIterator.nextIndex() - 1].kind !in hashSetOf(TokenType.NEWLINE, TokenType.EOF, TokenType.CLOSE_PAREN)
+            && peekAhead().kind !in hashSetOf(TokenType.NEWLINE, TokenType.EOF, TokenType.CLOSE_PAREN)
+        ) {
             val parameterNode = parseWithBindingPower(0, listOf(TokenType.COMMA, TokenType.CLOSE_PAREN))
             parameters.add(parameterNode)
         }
