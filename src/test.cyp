@@ -1,6 +1,10 @@
-if (2 == 3) {
-    x = 1
+proc subtractTwo(a, b) {
+    if (a > b) {
+        a - b
+    }
+    else {
+        b - a
+    }
 }
-elif {
-    x = 2
-}
+
+print(subtractTwo(2, 33))

@@ -19,6 +19,7 @@ class Interpreter(private val sourceText: String) {
             is Node.VarAccessNode -> parseVarAccessNode(node, symbolTable)
             is Node.MethodCallNode -> parseMethodCallNode(node, symbolTable)
             is Node.FunctionCallNode -> parseFunctionCallNode(node, symbolTable)
+            is Node.IfNode -> parseIfNode(node, symbolTable)
             is Node.ProcedureNode -> parseProcedureNode(node, symbolTable)
             is Node.BlockNode -> parseBlockNode(node, SymbolTable(symbolTable))
             is Node.EmptyNode -> CypressNull(null) as T
@@ -154,6 +155,24 @@ class Interpreter(private val sourceText: String) {
         val procedure = CypressProcedure(node.blockNode, node.parameterNames)
         symbolTable.setVariable(node.procedureName.text(sourceText), procedure as CypressType<Any>)
         return procedure as T
+    }
+
+    private inline fun <reified T: CypressType<Any>> parseIfNode(
+        node: Node.IfNode,
+        symbolTable: SymbolTable
+    ) : T {
+        for ((conditionalNode, blockNode) in node.conditionalNodes.zip(node.blockNodes)) {
+            // Check if the conditional node passes as true (or CypressInt(1) in the language).
+            if (walk<CypressType<Any>>(conditionalNode, symbolTable).asBoolean().value == 1) {
+                return parseBlockNode(blockNode, symbolTable)
+            }
+        }
+
+        if (node.blockNodes.size > node.conditionalNodes.size) {
+            return parseBlockNode(node.blockNodes.last(), symbolTable)
+        }
+
+        return CypressInt(0) as T
     }
 
     private inline fun <reified T: CypressType<Any>> parseBlockNode(node: Node.BlockNode, symbolTable: SymbolTable) : T {

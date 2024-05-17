@@ -14,7 +14,6 @@ fun main() {
 
     // Run the language
     val tokens = Lexer(text).tokenize()
-    println(tokens)
     val parser = Parser(tokens).parseExpr().filter { it !is Node.EmptyNode }
     val interpreter = Interpreter(text)
     parser.map { interpreter.walk<CypressType<*>>(it) }

@@ -56,6 +56,12 @@ class Parser(private val tokens: MutableList<Token>) {
         }
 
         var lhs: Node = matchNode(advance())
+
+        // Short hand parsing to avoid trying to parse a right-hand side for an if statement
+        if (lhs is Node.IfNode) {
+            return lhs
+        }
+
         var nextToken = peekAhead()
 
         while (
@@ -94,6 +100,7 @@ class Parser(private val tokens: MutableList<Token>) {
             TokenType.NOT -> Node.UnaryNode(token.kind, parseWithBindingPower(0))
             TokenType.OPEN_PAREN -> parseWithBindingPower(0, listOf(TokenType.CLOSE_PAREN))
             TokenType.OPEN_BRACE -> Node.BlockNode(parseExpr(listOf(TokenType.CLOSE_BRACE)))
+            TokenType.IF -> parseIfStatement()
             else -> throw CypressError.CypressSyntaxError("Invalid usage of token: $token")
         }
     }
@@ -139,6 +146,41 @@ class Parser(private val tokens: MutableList<Token>) {
 
         val blockNode = Node.BlockNode(parseExpr(listOf(TokenType.CLOSE_BRACE)))
         return Node.ProcedureNode(functionName, parameters, blockNode)
+    }
+
+    private fun parseIfStatement(): Node {
+        val conditionalNodes = mutableListOf<Node.ConditionalNode>()
+        val blockNodes = mutableListOf<Node.BlockNode>()
+
+        while (
+            tokens[tokenIterator.nextIndex() - 1].kind in hashSetOf(TokenType.IF, TokenType.ELIF, TokenType.ELSE)
+        ) {
+            advance()  // Advance past the if/elif/else token
+
+            // Determines the conditional node for if/elif statements (but not else, because when you advance you'll land on an open brace)
+            val inIfStatement = tokens[tokenIterator.previousIndex()].kind == TokenType.OPEN_PAREN
+            if (inIfStatement) {
+                val conditionalNode = parseWithBindingPower(0, listOf(TokenType.CLOSE_PAREN, TokenType.OPEN_BRACE))
+                conditionalNodes.add(conditionalNode as Node.ConditionalNode)
+
+                if (tokens[tokenIterator.nextIndex() - 1].kind == TokenType.CLOSE_PAREN) {
+                    advance()
+                }
+            }
+
+            val blockNode = Node.BlockNode(parseExpr(listOf(TokenType.CLOSE_BRACE)))
+            blockNodes.add(blockNode)
+
+            while (peekAhead().kind == TokenType.NEWLINE) {
+                advance() // Advance onto the last newline
+            }
+
+            if (peekAhead().kind != TokenType.EOF && inIfStatement) {
+                advance()  // Advance to the last newline
+            }
+        }
+
+        return Node.IfNode(conditionalNodes.toList(), blockNodes.toList())
     }
 
     private fun parseIdentifier(token: Token): Node {

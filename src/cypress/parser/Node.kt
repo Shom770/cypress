@@ -15,5 +15,6 @@ sealed class Node {
     data class MethodCallNode(val methodTarget: Node, val functionCallNode: FunctionCallNode) : Node()
     data class BlockNode(val nodes: List<Node>) : Node()  // Signifies a block of code (marked by braces}
     data class ProcedureNode(val procedureName: Token, val parameterNames: List<Token>, val blockNode: BlockNode) : Node()
+    data class IfNode(val conditionalNodes: List<ConditionalNode>, val blockNodes: List<BlockNode>) : Node()
     object EmptyNode : Node()  // Used to signify EOFs
 }
